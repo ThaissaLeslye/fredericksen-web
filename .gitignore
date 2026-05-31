@@ -8,6 +8,7 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
+repomix-output.xml
 
 # =========================================================================
 # 2. Environment Variables & Sensitive Configurations (Critical Security)
