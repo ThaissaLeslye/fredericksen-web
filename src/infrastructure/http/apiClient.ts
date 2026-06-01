@@ -6,7 +6,6 @@ export const apiClient = axios.create({
     timeout: 5000, // RNF03: Limite de 5s para performance
 })
 
-// Interceptor de Requisição: Puxa o token dinamicamente
 apiClient.interceptors.request.use(
     (config) => {
         const token = tokenService.getToken()
@@ -18,7 +17,7 @@ apiClient.interceptors.request.use(
     (error: unknown) => Promise.reject(error)
 )
 
-// Interceptor de Resposta: Intercepta 401 (RFE04) de forma isolada
+// RFE04: Intercepta 401 de forma isolada
 apiClient.interceptors.response.use(
     (response) => response,
     (error: unknown) => {
