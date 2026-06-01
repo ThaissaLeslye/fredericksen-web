@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import { tokenService } from '../infrastructure/token/tokenService'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -23,6 +24,18 @@ const router = createRouter({
       meta: { requiresAuth: true },
     },
   ],
+})
+
+router.beforeEach((to, _from, next) => {
+  const isAuthenticated = !!tokenService.getToken()
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' })
+  } else if (to.name === 'login' && isAuthenticated) {
+    next({ name: 'home' })
+  } else {
+    next()
+  }
 })
 
 export default router
