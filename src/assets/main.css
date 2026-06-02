@@ -1,15 +1,55 @@
 @import "tailwindcss";
 
-@import "./base.css";
-
 @theme {
-    --color-brand-red: var(--color-fredericksen-red);
-    --color-brand-dark: var(--color-fredericksen-dark);
-    --color-brand-card: var(--color-fredericksen-bg-card);
-
+    --color-brand-red: #c35050;
+    --color-brand-dark: #8e4a4a;
+    --color-brand-card: #fff1f7;
     --animate-fade-in: fade-in 0.2s ease-out;
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(4px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
 }
 
+/* Reset Global limpo integrado diretamente para o parser v4 */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: #ffffff;
+    color: #181818;
+    line-height: 1.5;
+    font-family:
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+    -webkit-font-smoothing: antialiased;
+}
+
+#app {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Utilitário Mobile-First */
 @utility container-mobile {
     max-width: 440px;
     margin-left: auto;
