@@ -1,5 +1,4 @@
 import { fileURLToPath, URL } from 'node:url'
-
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
@@ -8,11 +7,25 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 export default defineConfig({
   plugins: [
     vue(),
-    vueDevTools(),
+    vueDevTools({
+      appendTo: 'src/main.ts',
+    }),
   ],
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
+  server: {
+    host: '0.0.0.0',
+    port: 5173,
+    strictPort: true,
+    hmr: {
+      clientPort: 5173,
+    },
+    watch: {
+      usePolling: process.env.WATCHPACK_POLLING === 'true',
+      ignored: ['**/node_modules/**', '**/.git/**']
+    }
+  }
 })
