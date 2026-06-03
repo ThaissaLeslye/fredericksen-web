@@ -9,7 +9,9 @@ let mockQueryParams: Record<string, string> = { code: 'mock-google-code', state:
 
 vi.mock('vue-router', () => ({
     useRoute: () => ({
-        query: mockQueryParams
+        get query() {
+            return mockQueryParams
+        }
     }),
     useRouter: () => ({
         push: mockPush
@@ -25,7 +27,7 @@ vi.mock('@/infrastructure/http/apiClient', () => ({
 describe('useOAuthCallback', () => {
     beforeEach(() => {
         setActivePinia(createPinia())
-        vi.restoreAllMocks()
+        vi.clearAllMocks()
         mockPush.mockClear()
         mockQueryParams = { code: 'mock-google-code', state: 'mock-state' }
     })
