@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import HomeView from '../views/home/HomeView.vue'
 import { tokenService } from '../infrastructure/token/tokenService'
 
 const router = createRouter({
