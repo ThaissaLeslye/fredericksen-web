@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
-import { useUserProfile } from "./composables/useUserProfile";
+import { useUserProfile } from "@/views/home/composables/useUserProfile";
 
 const { profile, loading, error, fetchProfile } = useUserProfile();
 
