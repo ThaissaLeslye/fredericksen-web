@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useLogin } from "./auth/composables/useLogin";
+import { useLogin } from "./composables/useLogin";
 
 const { googleAuthUrl, authError } = useLogin();
 </script>
