@@ -16,7 +16,6 @@ export function useProfile() {
         error.value = null
         try {
             const response = await apiClient.get<Profile>('/mvp1/profile')
-            // RFE02: Garante carga inicial limpando ou normalizando estados nulos da API
             medications.value = response.data.medications || ''
             allergies.value = response.data.allergies || ''
             bloodType.value = response.data.bloodType || ''
@@ -37,7 +36,6 @@ export function useProfile() {
 
         loading.value = true
 
-        // RF03: Montagem do payload flexível aceitando strings vazias ou nulas conforme a regra de negócio
         const payload: UpdateProfilePayload = {
             medications: finalMedications,
             allergies: finalAllergies,
@@ -45,7 +43,6 @@ export function useProfile() {
         }
 
         try {
-            // RF03: Persistência direta e imediata das seções modificadas no banco de dados
             await apiClient.patch<void>('/mvp1/profile', payload)
 
             medications.value = finalMedications
