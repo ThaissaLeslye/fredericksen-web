@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
 import { useAuthStore } from "@/stores/auth/auth";
+import NetworkBanner from "@/components/NetworkBanner.vue";
 
 const authStore = useAuthStore();
 
@@ -19,4 +20,5 @@ onUnmounted(() => {
 
 <template>
   <RouterView />
+  <NetworkBanner />
 </template>
