@@ -48,9 +48,21 @@ describe('useProfile Composable', () => {
     })
 
     it('should successfully persist completely empty or cleared values without local blocking', async () => {
+        vi.mocked(apiClient.get).mockResolvedValueOnce({
+            data: {
+                id: 'uuid-123',
+                name: 'Thaisa Leslye Lourenço',
+                email: 'fulana.tal@gmail.com',
+                photoUrl: null,
+                medications: 'Med1, Med2',
+                allergies: 'Poeira',
+                bloodType: 'O_POSITIVE'
+            }
+        })
         vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} })
 
         const { medications, allergies, bloodType, success, error, updateProfile } = useProfile()
+        await useProfile().loadProfile()
 
         medications.value = ''
         allergies.value = ''
