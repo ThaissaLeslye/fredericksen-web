@@ -20,16 +20,16 @@ export const useAuthStore = defineStore('auth', () => {
         token.value = accessToken
         user.value = userData
 
-        localStorage.setItem('auth_token', accessToken)
+        //localStorage.setItem('auth_token', accessToken)
+        tokenService.setToken(accessToken)
     }
 
     function logout(): void {
-        // RF04: Reseta o estado em memória do Pinia imediatamente
         user.value = null
         token.value = null
         isProcessing.value = false
 
-        // RNF02: Limpeza destrutiva de todo o armazenamento local
+        tokenService.removeToken()
         localStorage.clear()
 
         window.location.href = '/login'
