@@ -3,7 +3,7 @@ import { tokenService } from '../token/tokenService'
 
 export const apiClient = axios.create({
     baseURL: (import.meta.env.VITE_API_URL as string) || '',
-    timeout: 5000, // RNF03: Limite de 5s para performance
+    timeout: 5000,
 })
 
 apiClient.interceptors.request.use(
@@ -17,12 +17,17 @@ apiClient.interceptors.request.use(
     (error: unknown) => Promise.reject(error)
 )
 
-// RFE04: Intercepta 401 de forma isolada
 apiClient.interceptors.response.use(
     (response) => response,
     (error: unknown) => {
-        if (axios.isAxiosError(error) && error.response?.status === 401) {
-            window.dispatchEvent(new CustomEvent('auth:expired'))
+        if (axios.isAxiosError(error)) {
+            if (error.response?.status === 401) {
+                window.dispatchEvent(new CustomEvent('auth:expired'))
+            }
+
+            if (!error.response || error.code === 'ERR_NETWORK' || error.code === 'ECONNABORTED') {
+                window.dispatchEvent(new CustomEvent('network:midflight-error'))
+            }
         }
         return Promise.reject(error)
     }
