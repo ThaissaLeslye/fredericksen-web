@@ -1,15 +1,11 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted } from "vue";
-import { useRouter } from "vue-router";
+import { useAuthStore } from "@/stores/auth/auth";
 
-const router = useRouter();
+const authStore = useAuthStore();
 
 const handleSessionExpired = (): void => {
-  // RNF02: Limpeza imediata do armazenamento local para evitar vazamento de dados médicos
-  localStorage.clear();
-
-  // RFE04: Redireciona forçadamente para a tela de login
-  router.push({ name: "login" });
+  authStore.logout();
 };
 
 onMounted(() => {
