@@ -12,7 +12,7 @@ describe('apiClient', () => {
     it('should inject Authorization header if token exists', async () => {
         tokenService.setToken('mock-jwt-token')
 
-        const dummyConfig = { headers: {} } as any
+        const dummyConfig = { headers: {} } as unknown as Record<string, unknown>
         const requestInterceptor = (apiClient.interceptors.request as any).handlers[0].fulfilled
 
         const result = requestInterceptor(dummyConfig)
@@ -32,5 +32,23 @@ describe('apiClient', () => {
         await expect(responseInterceptorError(mockAxiosError)).rejects.toEqual(mockAxiosError)
         expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent))
         expect(dispatchSpy.mock.calls[0][0].type).toBe('auth:expired')
+    })
+
+    it('should dispatch network:midflight-error on network connection failure', async () => {
+        const dispatchSpy = vi.spyOn(window, 'dispatchEvent')
+        const responseInterceptorError = (apiClient.interceptors.response as any).handlers[0].rejected
+
+        const mockNetworkError = {
+            isAxiosError: true,
+            code: 'ERR_NETWORK',
+            response: undefined
+        }
+        vi.spyOn(axios, 'isAxiosError').mockReturnValue(true)
+
+        await expect(responseInterceptorError(mockNetworkError)).rejects.toEqual(mockNetworkError)
+        expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent))
+
+        const dispatchedEvent = dispatchSpy.mock.calls.find(call => call[0].type === 'network:midflight-error')
+        expect(dispatchedEvent).toBeDefined()
     })
 })
