@@ -1,24 +1,25 @@
-import { ref, shallowRef } from 'vue'
+import { ref } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
-import type { Profile, UpdateProfilePayload } from '@/types/profile'
+import type { Profile, UpdateProfilePayload, BackendBloodType } from '@/types/profile'
 
 export function useProfile() {
     const loading = ref<boolean>(false)
     const error = ref<string | null>(null)
     const success = ref<boolean>(false)
 
-    const medicaments = shallowRef<string[]>([])
-    const allergies = shallowRef<string[]>([])
-    const bloodType = ref<string>('')
+    const medications = ref<string>('')
+    const allergies = ref<string>('')
+    const bloodType = ref<BackendBloodType | ''>('')
 
     async function loadProfile(): Promise<void> {
         loading.value = true
         error.value = null
         try {
             const response = await apiClient.get<Profile>('/mvp1/profile')
-            medicaments.value = response.data.medicaments
-            allergies.value = response.data.allergies
-            bloodType.value = response.data.bloodType
+            // RFE02: Garante carga inicial limpando ou normalizando estados nulos da API
+            medications.value = response.data.medications || ''
+            allergies.value = response.data.allergies || ''
+            bloodType.value = response.data.bloodType || ''
         } catch {
             error.value = 'Não foi possível carregar os dados do perfil.'
         } finally {
@@ -26,32 +27,35 @@ export function useProfile() {
         }
     }
 
-    async function updateProfile(): Promise<boolean> {
-        if (!bloodType.value.trim()) {
-            error.value = 'O tipo sanguíneo é obrigatório.'
-            return false
-        }
-
-        if (medicaments.value.length === 0 || allergies.value.length === 0) {
-            error.value = 'Medicamentos e Alergias precisam conter ao menos um registro.'
-            return false
-        }
-
-        loading.value = true
+    async function updateProfile(fieldsToUpdate?: Partial<UpdateProfilePayload>): Promise<boolean> {
         error.value = null
         success.value = false
 
+        const finalMedications = fieldsToUpdate?.medications ?? medications.value
+        const finalAllergies = fieldsToUpdate?.allergies ?? allergies.value
+        const finalBloodType = fieldsToUpdate?.bloodType ?? bloodType.value
+
+        loading.value = true
+
+        // RF03: Montagem do payload flexível aceitando strings vazias ou nulas conforme a regra de negócio
         const payload: UpdateProfilePayload = {
-            medicaments: medicaments.value,
-            allergies: allergies.value,
-            bloodType: bloodType.value
+            medications: finalMedications,
+            allergies: finalAllergies,
+            bloodType: (finalBloodType || null) as unknown as BackendBloodType
         }
 
         try {
+            // RF03: Persistência direta e imediata das seções modificadas no banco de dados
             await apiClient.patch<void>('/mvp1/profile', payload)
+
+            medications.value = finalMedications
+            allergies.value = finalAllergies
+            bloodType.value = finalBloodType
+
             success.value = true
             return true
         } catch {
+            // RFE02: Tratamento de erro caso a persistência falhe
             error.value = 'Falha ao atualizar o perfil médico. Tente novamente.'
             return false
         } finally {
@@ -59,24 +63,14 @@ export function useProfile() {
         }
     }
 
-    function setMedicaments(list: string[]): void {
-        medicaments.value = [...list]
-    }
-
-    function setAllergies(list: string[]): void {
-        allergies.value = [...list]
-    }
-
     return {
         loading,
         error,
         success,
-        medicaments,
+        medications,
         allergies,
         bloodType,
         loadProfile,
-        updateProfile,
-        setMedicaments,
-        setAllergies
+        updateProfile
     }
 }
