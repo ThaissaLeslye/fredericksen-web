@@ -8,15 +8,6 @@ import { BLOOD_TYPE_MAP, type BackendBloodType } from "@/types/profile";
 const router = useRouter();
 const authStore = useAuthStore();
 
-if (!authStore.user) {
-  authStore.user = {
-    id: "dev-mock-uuid",
-    name: "Teste Mock da Silva",
-    email: "fulana.tal@gmail.com",
-    photoUrl: "https://www.gravatar.com/avatar/?d=mp",
-  };
-}
-
 const { error, success, medications, allergies, bloodType, loadProfile, updateProfile } =
   useProfile();
 
