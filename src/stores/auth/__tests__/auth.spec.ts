@@ -31,7 +31,7 @@ describe('useAuthStore', () => {
         expect(store.token).toBe(mockToken)
         expect(store.user).toEqual(mockUser)
         expect(store.isAuthenticated).toBe(true)
-        expect(localStorage.getItem('auth_token')).toBe(mockToken)
+        expect(localStorage.getItem('auth_token_mvp1')).toBe(mockToken)
     })
 
     it('should clean memory and storage keys completely on logout', () => {
