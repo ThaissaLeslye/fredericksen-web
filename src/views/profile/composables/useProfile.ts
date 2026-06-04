@@ -11,6 +11,24 @@ export function useProfile() {
     const allergies = ref<string>('')
     const bloodType = ref<BackendBloodType | ''>('')
 
+    let pristineSnapshot = { medications: '', allergies: '', bloodType: '' }
+
+    function createSnapshot(): void {
+        pristineSnapshot = {
+            medications: medications.value,
+            allergies: allergies.value,
+            bloodType: bloodType.value
+        }
+    }
+
+    function isDirty(): boolean {
+        return (
+            medications.value !== pristineSnapshot.medications ||
+            allergies.value !== pristineSnapshot.allergies ||
+            bloodType.value !== pristineSnapshot.bloodType
+        )
+    }
+
     async function loadProfile(): Promise<void> {
         loading.value = true
         error.value = null
@@ -19,6 +37,8 @@ export function useProfile() {
             medications.value = response.data.medications || ''
             allergies.value = response.data.allergies || ''
             bloodType.value = response.data.bloodType || ''
+
+            createSnapshot()
         } catch {
             error.value = 'Não foi possível carregar os dados do perfil.'
         } finally {
@@ -27,6 +47,8 @@ export function useProfile() {
     }
 
     async function updateProfile(fieldsToUpdate?: Partial<UpdateProfilePayload>): Promise<boolean> {
+        if (!isDirty()) return false
+
         error.value = null
         success.value = false
 
@@ -48,6 +70,8 @@ export function useProfile() {
             medications.value = finalMedications
             allergies.value = finalAllergies
             bloodType.value = finalBloodType
+
+            createSnapshot()
 
             success.value = true
             return true
