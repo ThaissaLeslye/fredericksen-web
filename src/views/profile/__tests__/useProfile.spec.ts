@@ -61,8 +61,8 @@ describe('useProfile Composable', () => {
         })
         vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} })
 
-        const { medications, allergies, bloodType, success, error, updateProfile } = useProfile()
-        await useProfile().loadProfile()
+        const { medications, allergies, bloodType, success, error, updateProfile, loadProfile } = useProfile()
+        await loadProfile()
 
         medications.value = ''
         allergies.value = ''
