@@ -23,17 +23,17 @@ export default defineConfig({
       },
       manifest: {
         name: 'Fredericksen App',
-        short_name: 'Fredericksen',
-        description: 'Plataforma segura de gerenciamento de saúde animal',
+        short_name: 'Rick',
+        description: 'Hub familiar',
         theme_color: '#c35050',
         background_color: '#ffffff',
         display: 'standalone',
         orientation: 'portrait',
         icons: [
           {
-            src: 'favicon.ico',
+            src: 'rick.png',
             sizes: '64x64 32x32 24x24 16x16',
-            type: 'image/x-icon'
+            type: 'image/png'
           }
         ]
       }
@@ -43,6 +43,29 @@ export default defineConfig({
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
+  },
+  build: {
+    target: 'esnext',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 500,
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes('node_modules')) {
+            if (id.includes('vue') || id.includes('vue-router')) {
+              return 'vendor-core'
+            }
+            if (id.includes('pinia')) {
+              return 'vendor-store'
+            }
+            if (id.includes('axios')) {
+              return 'vendor-network'
+            }
+            return 'vendor-utils'
+          }
+        }
+      }
+    }
   },
   server: {
     host: '0.0.0.0',
