@@ -39,6 +39,7 @@ const { googleAuthUrl, authError } = useLogin();
               width="280"
               height="210"
               loading="eager"
+              fetchpriority="high"
               decoding="async"
               class="max-h-[70vh] w-auto object-contain drop-shadow-xl animate-fade-in pt-4"
             />
