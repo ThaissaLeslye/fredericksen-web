@@ -1,6 +1,7 @@
 import { ref, onUnmounted } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { Profile, UpdateProfilePayload, BackendBloodType } from '@/types/profile'
+import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
 
 export function useProfile() {
     const loading = ref<boolean>(false)
@@ -35,7 +36,7 @@ export function useProfile() {
         loading.value = true
         error.value = null
         try {
-            const response = await apiClient.get<Profile>('/mvp1/profile')
+            const response = await apiClient.get<Profile>(API_ENDPOINTS.PROFILE.BASE)
             medications.value = response.data.medications || ''
             allergies.value = response.data.allergies || ''
             bloodType.value = response.data.bloodType || ''
