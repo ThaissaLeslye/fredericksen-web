@@ -1,4 +1,4 @@
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { Profile, UpdateProfilePayload, BackendBloodType } from '@/types/profile'
 
@@ -12,6 +12,8 @@ export function useProfile() {
     const bloodType = ref<BackendBloodType | ''>('')
 
     let pristineSnapshot = { medications: '', allergies: '', bloodType: '' }
+
+    let successTimer: ReturnType<typeof setTimeout> | null = null
 
     function createSnapshot(): void {
         pristineSnapshot = {
@@ -66,7 +68,14 @@ export function useProfile() {
 
             createSnapshot()
 
+            if (successTimer) clearTimeout(successTimer)
+
             success.value = true
+
+            successTimer = setTimeout(() => {
+                success.value = false
+            }, 3000)
+
             return true
         } catch {
             error.value = 'Falha ao atualizar o perfil médico. Tente novamente.'
@@ -75,6 +84,10 @@ export function useProfile() {
             loading.value = false
         }
     }
+
+    onUnmounted(() => {
+        if (successTimer) clearTimeout(successTimer)
+    })
 
     return {
         loading,
