@@ -46,37 +46,29 @@ export function useProfile() {
         }
     }
 
-    async function updateProfile(fieldsToUpdate?: Partial<UpdateProfilePayload>): Promise<boolean> {
+    // ALTERAÇÃO: Removido o argumento inativo fieldsToUpdate mitigando assinaturas poluidoras na API pública do composable (YAGNI)
+    async function updateProfile(): Promise<boolean> {
         if (!isDirty()) return false
 
         error.value = null
         success.value = false
 
-        const finalMedications = fieldsToUpdate?.medications ?? medications.value
-        const finalAllergies = fieldsToUpdate?.allergies ?? allergies.value
-        const finalBloodType = fieldsToUpdate?.bloodType ?? bloodType.value
-
         loading.value = true
 
         const payload: UpdateProfilePayload = {
-            medications: finalMedications,
-            allergies: finalAllergies,
-            bloodType: (finalBloodType || null) as unknown as BackendBloodType
+            medications: medications.value,
+            allergies: allergies.value,
+            bloodType: bloodType.value === '' ? null : bloodType.value
         }
 
         try {
             await apiClient.patch<void>('/mvp1/profile', payload)
-
-            medications.value = finalMedications
-            allergies.value = finalAllergies
-            bloodType.value = finalBloodType
 
             createSnapshot()
 
             success.value = true
             return true
         } catch {
-            // RFE02: Tratamento de erro caso a persistência falhe
             error.value = 'Falha ao atualizar o perfil médico. Tente novamente.'
             return false
         } finally {

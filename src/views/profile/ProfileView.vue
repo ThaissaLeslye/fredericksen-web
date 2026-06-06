@@ -3,7 +3,7 @@ import { onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useProfile } from "./composables/useProfile";
 import { useAuthStore } from "@/stores/auth/auth";
-import { BLOOD_TYPE_MAP, type BackendBloodType } from "@/types/profile";
+import { BLOOD_TYPE_OPTIONS, type BackendBloodType } from "@/types/profile";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -148,8 +148,8 @@ onMounted(async () => {
             class="w-full bg-transparent border-none p-0 text-sm font-medium text-brand-dark/90 focus:outline-none focus:ring-0 cursor-pointer"
           >
             <option value="">Não informado</option>
-            <option v-for="(label, value) in BLOOD_TYPE_MAP" :key="value" :value="value">
-              {{ label }}
+            <option v-for="option in BLOOD_TYPE_OPTIONS" :key="option.value" :value="option.value">
+              {{ option.label }}
             </option>
           </select>
         </div>

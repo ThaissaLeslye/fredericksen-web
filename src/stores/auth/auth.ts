@@ -14,7 +14,7 @@ export const useAuthStore = defineStore('auth', () => {
     const token = ref<string | null>(tokenService.getToken())
     const isProcessing = ref<boolean>(false)
 
-    const isAuthenticated = computed<boolean>(() => !!token.value && !!user.value)
+    const isAuthenticated = computed<boolean>(() => !!token.value)
 
     function setSession(accessToken: string, userData: UserSession): void {
         token.value = accessToken
@@ -30,7 +30,6 @@ export const useAuthStore = defineStore('auth', () => {
         isProcessing.value = false
 
         tokenService.removeToken()
-        localStorage.clear()
 
         window.location.href = '/login'
     }

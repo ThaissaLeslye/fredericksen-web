@@ -34,6 +34,13 @@ describe('useAuthStore', () => {
         expect(localStorage.getItem('auth_token_mvp1')).toBe(mockToken)
     })
 
+    it('should consider authenticated if token exists even when user payload is absent on hard refresh', () => {
+        const store = useAuthStore()
+        store.token = 'mock-jwt-token'
+
+        expect(store.isAuthenticated).toBe(true)
+    })
+
     it('should clean memory and storage keys completely on logout', () => {
         const store = useAuthStore()
         const mockUser: UserSession = {
@@ -56,6 +63,6 @@ describe('useAuthStore', () => {
         expect(store.token).toBeNull()
         expect(store.isAuthenticated).toBe(false)
 
-        expect(localStorage.length).toBe(0)
+        expect(localStorage.getItem('auth_token_mvp1')).toBeNull()
     })
 })
