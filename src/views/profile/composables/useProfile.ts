@@ -61,7 +61,7 @@ export function useProfile() {
         const payload: UpdateProfilePayload = {
             medications: finalMedications,
             allergies: finalAllergies,
-            bloodType: (finalBloodType || null) as unknown as BackendBloodType
+            bloodType: finalBloodType === '' ? null : finalBloodType
         }
 
         try {

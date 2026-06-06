@@ -18,7 +18,11 @@ export interface Profile {
     bloodType: BackendBloodType
 }
 
-export type UpdateProfilePayload = Pick<Profile, 'medications' | 'allergies' | 'bloodType'>
+export interface UpdateProfilePayload {
+    medications: string
+    allergies: string
+    bloodType: BackendBloodType | null
+}
 
 
 export const BLOOD_TYPE_MAP: Record<BackendBloodType, string> = {
