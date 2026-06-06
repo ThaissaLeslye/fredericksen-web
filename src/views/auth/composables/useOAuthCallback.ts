@@ -13,42 +13,43 @@ export function useOAuthCallback() {
     const route = useRoute()
     const router = useRouter()
     const authStore = useAuthStore()
+
+    const isProcessing = ref<boolean>(false)
     const error = ref<string | null>(null)
 
     async function handleCallback(): Promise<void> {
-        const code = route.query.code as string | undefined
-        const state = route.query.state as string | undefined
+        const code = route.query.code
+        const state = route.query.state
 
-        if (!code) {
-            // RFE01: Erro de Autenticação: Exibir mensagem de erro caso o código do Google esteja ausente
+        if (typeof code !== 'string' || !code) {
             error.value = 'Código de autorização do Google não foi encontrado.'
             return
         }
 
-        authStore.isProcessing = true
+        isProcessing.value = true
         error.value = null
 
         try {
-            // Consome o endpoint /mvp1/auth/google/callback
+            const parsedState = typeof state === 'string' ? state : undefined
+
             const response = await apiClient.get<CallbackResponse>('/mvp1/auth/google/callback', {
-                params: { code, state }
+                params: { code, state: parsedState }
             })
 
             const { token, user } = response.data
 
             authStore.setSession(token, user)
 
-            // RF01: Usuário deve acessar o app via login do google e ser redirecionado para a tela Home.
             await router.push({ name: 'home' })
         } catch {
-            // RFE01: Erro de Autenticação: Exibir mensagem de erro caso o login via Google falhe ou o serviço esteja indisponível.
             error.value = 'Não foi possível concluir a autenticação com o Google. Tente novamente.'
         } finally {
-            authStore.isProcessing = false
+            isProcessing.value = false
         }
     }
 
     return {
+        isProcessing,
         error,
         handleCallback
     }

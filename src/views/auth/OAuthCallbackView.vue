@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useOAuthCallback } from "./composables/useOAuthCallback";
-import { useAuthStore } from "@/stores/auth/auth";
 
-const authStore = useAuthStore();
-const { error, handleCallback } = useOAuthCallback();
+const { isProcessing, error, handleCallback } = useOAuthCallback();
 
 onMounted(async () => {
   await handleCallback();
@@ -13,7 +11,7 @@ onMounted(async () => {
 
 <template>
   <div class="callback-container" aria-live="polite">
-    <div v-if="authStore.isProcessing" class="loading-state">
+    <div v-if="isProcessing" class="loading-state">
       <div class="spinner" aria-hidden="true"></div>
       <p>Autenticando sessão com o Google, aguarde...</p>
     </div>
