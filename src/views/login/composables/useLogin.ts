@@ -1,12 +1,13 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
 
 export function useLogin() {
     const route = useRoute()
 
     const googleAuthUrl = computed<string>(() => {
-        const baseUrl = (import.meta.env.VITE_API_URL as string) || ''
-        return `${baseUrl}/mvp1/auth/google`
+        const baseUrl = import.meta.env.VITE_API_URL || ''
+        return `${baseUrl}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`
     })
 
     const authError = computed<string | null>(() => {

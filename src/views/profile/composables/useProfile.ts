@@ -1,6 +1,7 @@
-import { ref } from 'vue'
+import { ref, onUnmounted } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { Profile, UpdateProfilePayload, BackendBloodType } from '@/types/profile'
+import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
 
 export function useProfile() {
     const loading = ref<boolean>(false)
@@ -12,6 +13,8 @@ export function useProfile() {
     const bloodType = ref<BackendBloodType | ''>('')
 
     let pristineSnapshot = { medications: '', allergies: '', bloodType: '' }
+
+    let successTimer: ReturnType<typeof setTimeout> | null = null
 
     function createSnapshot(): void {
         pristineSnapshot = {
@@ -33,7 +36,7 @@ export function useProfile() {
         loading.value = true
         error.value = null
         try {
-            const response = await apiClient.get<Profile>('/mvp1/profile')
+            const response = await apiClient.get<Profile>(API_ENDPOINTS.PROFILE.BASE)
             medications.value = response.data.medications || ''
             allergies.value = response.data.allergies || ''
             bloodType.value = response.data.bloodType || ''
@@ -46,7 +49,6 @@ export function useProfile() {
         }
     }
 
-    // ALTERAÇÃO: Removido o argumento inativo fieldsToUpdate mitigando assinaturas poluidoras na API pública do composable (YAGNI)
     async function updateProfile(): Promise<boolean> {
         if (!isDirty()) return false
 
@@ -66,7 +68,14 @@ export function useProfile() {
 
             createSnapshot()
 
+            if (successTimer) clearTimeout(successTimer)
+
             success.value = true
+
+            successTimer = setTimeout(() => {
+                success.value = false
+            }, 3000)
+
             return true
         } catch {
             error.value = 'Falha ao atualizar o perfil médico. Tente novamente.'
@@ -75,6 +84,10 @@ export function useProfile() {
             loading.value = false
         }
     }
+
+    onUnmounted(() => {
+        if (successTimer) clearTimeout(successTimer)
+    })
 
     return {
         loading,
