@@ -48,7 +48,6 @@ export function useProfile() {
         }
     }
 
-    // ALTERAÇÃO: Removido o argumento inativo fieldsToUpdate mitigando assinaturas poluidoras na API pública do composable (YAGNI)
     async function updateProfile(): Promise<boolean> {
         if (!isDirty()) return false
 
