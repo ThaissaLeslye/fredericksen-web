@@ -31,7 +31,11 @@ describe('apiClient', () => {
 
         await expect(responseInterceptorError(mockAxiosError)).rejects.toEqual(mockAxiosError)
         expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent))
-        expect(dispatchSpy.mock.calls[0][0].type).toBe('auth:expired')
+        const firstCall = dispatchSpy.mock.calls[0]
+        const firstArg = firstCall?.[0]
+
+        expect(firstArg).toBeDefined()
+        expect(firstArg?.type).toBe('auth:expired')
     })
 
     it('should dispatch network:midflight-error on network connection failure', async () => {
@@ -48,7 +52,7 @@ describe('apiClient', () => {
         await expect(responseInterceptorError(mockNetworkError)).rejects.toEqual(mockNetworkError)
         expect(dispatchSpy).toHaveBeenCalledWith(expect.any(CustomEvent))
 
-        const dispatchedEvent = dispatchSpy.mock.calls.find(call => call[0].type === 'network:midflight-error')
+        const dispatchedEvent = dispatchSpy.mock.calls.find(call => call[0]?.type === 'network:midflight-error')
         expect(dispatchedEvent).toBeDefined()
     })
 })
