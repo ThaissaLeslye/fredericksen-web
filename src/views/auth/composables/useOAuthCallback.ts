@@ -3,6 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import { useAuthStore } from '@/stores/auth/auth'
 import type { UserSession } from '@/stores/auth/auth'
+import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
 
 interface CallbackResponse {
     token: string
@@ -32,10 +33,9 @@ export function useOAuthCallback() {
         try {
             const parsedState = typeof state === 'string' ? state : undefined
 
-            const response = await apiClient.get<CallbackResponse>('/mvp1/auth/google/callback', {
+            const response = await apiClient.get<CallbackResponse>(API_ENDPOINTS.AUTH.GOOGLE_CALLBACK, {
                 params: { code, state: parsedState }
             })
-
             const { token, user } = response.data
 
             authStore.setSession(token, user)
