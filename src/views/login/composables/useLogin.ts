@@ -5,7 +5,7 @@ export function useLogin() {
     const route = useRoute()
 
     const googleAuthUrl = computed<string>(() => {
-        const baseUrl = (import.meta.env.VITE_API_URL as string) || ''
+        const baseUrl = import.meta.env.VITE_API_URL || ''
         return `${baseUrl}/mvp1/auth/google`
     })
 
