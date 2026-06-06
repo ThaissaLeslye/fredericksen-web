@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { UserSession } from '@/stores/auth/auth'
+import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
 
 export function useUserProfile() {
     const profile = ref<UserSession | null>(null)
@@ -12,7 +13,7 @@ export function useUserProfile() {
         error.value = null
 
         try {
-            const response = await apiClient.get<UserSession>('/mvp1/user/me')
+            const response = await apiClient.get<UserSession>(API_ENDPOINTS.USER.ME)
             profile.value = response.data
         } catch {
             profile.value = null
