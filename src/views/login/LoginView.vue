@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useLogin } from "./composables/useLogin";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const { googleAuthUrl, authError } = useLogin();
 </script>
@@ -54,14 +55,7 @@ const { googleAuthUrl, authError } = useLogin();
             Bem-vindo ao lar do Fredericksen
           </h1>
 
-          <div
-            v-if="authError"
-            role="alert"
-            aria-live="assertive"
-            class="w-full bg-brand-card border border-brand-red/20 text-brand-dark text-sm font-medium px-4 py-3 rounded-xl shadow-md animate-fade-in"
-          >
-            {{ authError }}
-          </div>
+          <BaseAlert v-if="authError" type="error" :message="authError" assertive />
 
           <!-- Login Button-->
           <a
