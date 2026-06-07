@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { defineComponent } from 'vue'
 import { mount } from '@vue/test-utils'
+import axios from 'axios'
 import { useUserProfile } from '../composables/useUserProfile'
 import { apiClient } from '@/infrastructure/http/apiClient'
-import axios from 'axios'
 
 vi.mock('@/infrastructure/http/apiClient', () => ({
     apiClient: {
@@ -12,21 +12,11 @@ vi.mock('@/infrastructure/http/apiClient', () => ({
 }))
 
 describe('useUserProfile', () => {
-
-    const mockAbort = vi.fn()
+    let abortSpy: ReturnType<typeof vi.spyOn>
 
     beforeEach(() => {
         vi.clearAllMocks()
-        vi.restoreAllMocks()
-        mockAbort.mockClear()
-
-        vi.mock('axios', async (importOriginal) => {
-            const actual = await importOriginal<typeof axios>()
-            return {
-                ...actual,
-                isCancel: vi.fn()
-            }
-        })
+        abortSpy = vi.spyOn(AbortController.prototype, 'abort')
     })
 
     it('should initialize with default pristine states', () => {
@@ -74,18 +64,16 @@ describe('useUserProfile', () => {
         expect(error.value).toBe('Não foi possível carregar os dados do perfil.')
     })
 
-    it('should silently ignore errors triggered by an intentional AbortController cancel request', async () => {
-        const cancelError = new Error('Canceled')
+    it('should silently ignore errors triggered by an intentional cancellation', async () => {
+        const cancelError = new axios.CanceledError('Request aborted')
         vi.mocked(apiClient.get).mockRejectedValueOnce(cancelError)
-        vi.spyOn(axios, 'isCancel').mockReturnValueOnce(true)
 
-        const { profile, loading, error, fetchProfile } = useUserProfile()
-
+        const { profile, error, loading, fetchProfile } = useUserProfile()
         await fetchProfile()
 
         expect(profile.value).toBeNull()
         expect(error.value).toBeNull()
-        expect(loading.value).toBe(true)
+        expect(loading.value).toBe(false)
     })
 
     it('should abort the previous flight request when fetchProfile is called multiple times consecutively', async () => {
@@ -94,8 +82,9 @@ describe('useUserProfile', () => {
         const { fetchProfile } = useUserProfile()
 
         fetchProfile()
+        fetchProfile()
 
-        expect(mockAbort).toHaveBeenCalled()
+        expect(abortSpy).toHaveBeenCalledTimes(1)
     })
 
     it('should abort any pending active request when the host component unmounts', () => {
@@ -113,6 +102,6 @@ describe('useUserProfile', () => {
         const wrapper = mount(TestComponent)
         wrapper.unmount()
 
-        expect(mockAbort).toHaveBeenCalled()
+        expect(abortSpy).toHaveBeenCalledTimes(1)
     })
 })
