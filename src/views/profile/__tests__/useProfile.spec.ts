@@ -100,4 +100,19 @@ describe('useProfile Composable', () => {
             bloodType: 'O_NEGATIVE'
         })
     })
+
+    it('should forward data without execution or mutations when handling malicious XSS scripts inside input states', async () => {
+        vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} })
+        const { medications, updateProfile } = useProfile()
+
+        const maliciousPayload = "<script>alert('xss')</script>"
+        medications.value = maliciousPayload
+
+        const result = await updateProfile()
+
+        expect(result).toBe(true)
+        expect(apiClient.patch).toHaveBeenCalledWith('/mvp1/profile', expect.objectContaining({
+            medications: maliciousPayload
+        }))
+    })
 })
