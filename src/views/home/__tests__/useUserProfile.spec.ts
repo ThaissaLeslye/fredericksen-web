@@ -11,17 +11,22 @@ vi.mock('@/infrastructure/http/apiClient', () => ({
     }
 }))
 
-vi.mock('axios', async (importOriginal) => {
-    const actual = await importOriginal<typeof axios>()
-    return {
-        ...actual,
-        isCancel: vi.fn()
-    }
-})
-
 describe('useUserProfile', () => {
+
+    const mockAbort = vi.fn()
+
     beforeEach(() => {
         vi.clearAllMocks()
+        vi.restoreAllMocks()
+        mockAbort.mockClear()
+
+        vi.mock('axios', async (importOriginal) => {
+            const actual = await importOriginal<typeof axios>()
+            return {
+                ...actual,
+                isCancel: vi.fn()
+            }
+        })
     })
 
     it('should initialize with default pristine states', () => {
@@ -72,7 +77,7 @@ describe('useUserProfile', () => {
     it('should silently ignore errors triggered by an intentional AbortController cancel request', async () => {
         const cancelError = new Error('Canceled')
         vi.mocked(apiClient.get).mockRejectedValueOnce(cancelError)
-        vi.mocked(axios.isCancel).mockReturnValueOnce(true)
+        vi.spyOn(axios, 'isCancel').mockReturnValueOnce(true)
 
         const { profile, loading, error, fetchProfile } = useUserProfile()
 
@@ -85,18 +90,16 @@ describe('useUserProfile', () => {
 
     it('should abort the previous flight request when fetchProfile is called multiple times consecutively', async () => {
         vi.mocked(apiClient.get).mockResolvedValue({ data: {} })
-        const abortSpy = vi.spyOn(AbortController.prototype, 'abort')
 
         const { fetchProfile } = useUserProfile()
 
         fetchProfile()
 
-        expect(abortSpy).toHaveBeenCalled()
+        expect(mockAbort).toHaveBeenCalled()
     })
 
     it('should abort any pending active request when the host component unmounts', () => {
         vi.mocked(apiClient.get).mockReturnValue(new Promise(() => { }))
-        const abortSpy = vi.spyOn(AbortController.prototype, 'abort')
 
         const TestComponent = defineComponent({
             setup() {
@@ -110,6 +113,6 @@ describe('useUserProfile', () => {
         const wrapper = mount(TestComponent)
         wrapper.unmount()
 
-        expect(abortSpy).toHaveBeenCalled()
+        expect(mockAbort).toHaveBeenCalled()
     })
 })
