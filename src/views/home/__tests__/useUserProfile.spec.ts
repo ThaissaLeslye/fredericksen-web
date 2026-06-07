@@ -41,7 +41,9 @@ describe('useUserProfile', () => {
         expect(loading.value).toBe(false)
         expect(profile.value).toEqual(mockUser)
         expect(error.value).toBeNull()
-        expect(apiClient.get).toHaveBeenCalledWith('/mvp1/user/me')
+        expect(apiClient.get).toHaveBeenCalledWith('/mvp1/user/me', expect.objectContaining({
+            signal: expect.any(AbortSignal)
+        }))
     })
 
     it('should gracefully handle network crash and set deterministic error string', async () => {
