@@ -1,0 +1,34 @@
+@import "tailwindcss";
+
+@theme {
+    --color-brand-red: #c35050;
+    --color-brand-dark: #8e4a4a;
+    --color-brand-card: #fff1f7;
+
+    /* Adding custom spacing tokens to clear unmapped utilities safely */
+    --spacing-12\.5: 3.125rem;
+    --spacing-70: 17.5rem;
+
+    --animate-fade-in: fade-in 1.5s ease-in;
+
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(-80px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0px);
+        }
+    }
+}
+
+/* Layering global application setups without breaking preflight */
+@layer base {
+    html,
+    body {
+        background-color: #ffffff;
+        color: #181818;
+        overflow-x: hidden;
+    }
+}

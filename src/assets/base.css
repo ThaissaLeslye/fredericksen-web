@@ -1,0 +1,44 @@
+/* Definição de variáveis base do projeto utilizando a paleta oficial */
+:root {
+    --color-fredericksen-red: #c35050;
+    --color-fredericksen-dark: #8e4a4a;
+    --color-fredericksen-bg-card: #fff1f7;
+    --color-white: #ffffff;
+
+    --color-background: #ffffff;
+}
+
+/* Reset global e higienização estrutural do DOM */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--color-background);
+    color: #181818;
+    line-height: 1.5;
+    font-family:
+        "Onest",
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Centralização limpa para layouts mobile-first nas telas de Login e Home */
+#app {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}

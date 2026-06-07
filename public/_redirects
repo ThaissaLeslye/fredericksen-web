@@ -1,0 +1,2 @@
+# RF01: Garante que qualquer rota dinâmica (como /profile) seja reescrita para o ponto de entrada da SPA, evitando erros 404 de servidor
+/* /index.html   200

@@ -1,0 +1,45 @@
+import { ref, computed } from 'vue'
+import { defineStore } from 'pinia'
+import { tokenService } from '@/infrastructure/token/tokenService'
+
+export interface UserSession {
+    id: string
+    name: string
+    email: string
+    photoUrl: string
+}
+
+export const useAuthStore = defineStore('auth', () => {
+    const user = ref<UserSession | null>(null)
+    const token = ref<string | null>(tokenService.getToken())
+    const isProcessing = ref<boolean>(false)
+
+    const isAuthenticated = computed<boolean>(() => !!token.value)
+
+    function setSession(accessToken: string, userData: UserSession): void {
+        token.value = accessToken
+        user.value = userData
+
+        //localStorage.setItem('auth_token', accessToken)
+        tokenService.setToken(accessToken)
+    }
+
+    function logout(): void {
+        user.value = null
+        token.value = null
+        isProcessing.value = false
+
+        tokenService.removeToken()
+
+        window.location.href = '/login'
+    }
+
+    return {
+        user,
+        token,
+        isProcessing,
+        isAuthenticated,
+        setSession,
+        logout
+    }
+})
