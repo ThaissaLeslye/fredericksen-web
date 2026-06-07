@@ -2,7 +2,7 @@ import { ref, onUnmounted } from 'vue'
 import axios from 'axios'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { UserSession } from '@/stores/auth/auth'
-import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
+import { API_ENDPOINTS } from '@/config/endpoints'
 
 export function useUserProfile() {
     const profile = ref<UserSession | null>(null)

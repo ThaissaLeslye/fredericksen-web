@@ -1,6 +1,6 @@
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
+import { API_ENDPOINTS } from '@/config/endpoints'
 
 export function useLogin() {
     const route = useRoute()
