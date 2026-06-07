@@ -4,6 +4,8 @@ import { useRouter } from "vue-router";
 import { useProfile } from "./composables/useProfile";
 import { useAuthStore } from "@/stores/auth/auth";
 import { BLOOD_TYPE_OPTIONS, type BackendBloodType } from "@/types/profile";
+import { APP_CONFIG } from "@/config/constants";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -38,21 +40,10 @@ onMounted(async () => {
   <div
     class="relative w-full min-h-dvh flex flex-col bg-gradient-to-b from-brand-red to-brand-dark px-6 py-8 font-sans text-brand-dark overflow-y-auto select-none"
   >
-    <div aria-live="assertive" class="w-full max-w-sm mx-auto mb-2 fixed top-4 inset-x-6 z-50">
-      <div
-        v-if="error"
-        role="alert"
-        class="bg-white border-l-4 border-brand-red text-red-700 p-3 rounded-r-xl text-xs font-semibold shadow-xl animate-fade-in"
-      >
-        {{ error }}
-      </div>
-      <div
-        v-if="success"
-        role="alert"
-        class="bg-emerald-50 text-emerald-800 p-3 rounded-xl text-xs font-semibold shadow-xl border border-emerald-200 text-center animate-fade-in"
-      >
-        Alterações sincronizadas com o banco.
-      </div>
+    <div class="w-full max-w-sm mx-auto mb-2 fixed top-4 inset-x-6 z-50 flex flex-col gap-2">
+      <BaseAlert v-if="error" type="error" :message="error" assertive />
+
+      <BaseAlert v-if="success" type="success" message="Alterações sincronizadas com o banco." />
     </div>
 
     <!-- Profile Image, Name and Email -->
@@ -203,7 +194,9 @@ onMounted(async () => {
           </svg>
           <span>VOLTAR</span>
         </button>
-        <span class="text-white/40 text-xs font-medium tracking-wider">v1.3.0</span>
+        <span class="text-white/40 text-xs font-medium tracking-wider">{{
+          APP_CONFIG.VERSION
+        }}</span>
       </footer>
     </main>
   </div>
