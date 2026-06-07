@@ -25,9 +25,10 @@ describe('useNetworkStatus Composable', () => {
     })
 
     it('should reactively update isOnline when browser goes offline', async () => {
-        vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(false)
+        const onlineSpy = vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true)
         const wrapper = mount(TestComponent)
 
+        onlineSpy.mockReturnValue(false)
         window.dispatchEvent(new Event('offline'))
 
         expect(wrapper.vm.isOnline).toBe(false)
