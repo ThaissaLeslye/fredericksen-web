@@ -6,7 +6,7 @@ describe('Router Navigation Guards', () => {
     beforeEach(async () => {
         localStorage.clear()
         vi.restoreAllMocks()
-        await router.push('/')
+        await router.push('/auth/callback')
     })
 
     it('should redirect an unauthenticated user to login when accessing a protected route', async () => {
