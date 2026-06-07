@@ -3,7 +3,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import { useAuthStore } from '@/stores/auth/auth'
 import type { UserSession } from '@/stores/auth/auth'
-import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
+import { API_ENDPOINTS } from '@/config/endpoints'
 
 interface CallbackResponse {
     token: string

@@ -1,7 +1,7 @@
 import { ref, onUnmounted } from 'vue'
 import { apiClient } from '@/infrastructure/http/apiClient'
 import type { Profile, UpdateProfilePayload, BackendBloodType } from '@/types/profile'
-import { API_ENDPOINTS } from '@/infrastructure/http/endpoints'
+import { API_ENDPOINTS } from '@/config/endpoints'
 
 export function useProfile() {
     const loading = ref<boolean>(false)

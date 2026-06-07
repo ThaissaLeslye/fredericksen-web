@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useOAuthCallback } from "./composables/useOAuthCallback";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const { isProcessing, error, handleCallback } = useOAuthCallback();
 
@@ -17,7 +18,7 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="error" class="error-state">
-      <p class="error-message">{{ error }}</p>
+      <BaseAlert type="error" :message="error" assertive />
       <router-link to="/login" class="back-button"> Voltar para a página de Login </router-link>
     </div>
   </div>
