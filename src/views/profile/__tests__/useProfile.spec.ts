@@ -1,4 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { defineComponent } from 'vue'
+import { mount } from '@vue/test-utils'
 import { useProfile } from '../composables/useProfile'
 import { apiClient } from '@/infrastructure/http/apiClient'
 
@@ -99,5 +101,81 @@ describe('useProfile Composable', () => {
             allergies: 'Poeira',
             bloodType: 'O_NEGATIVE'
         })
+    })
+
+    it('should forward data without execution or mutations when handling malicious XSS scripts inside input states', async () => {
+        vi.mocked(apiClient.patch).mockResolvedValueOnce({ data: {} })
+        const { medications, updateProfile } = useProfile()
+
+        const maliciousPayload = "<script>alert('xss')</script>"
+        medications.value = maliciousPayload
+
+        const result = await updateProfile()
+
+        expect(result).toBe(true)
+        expect(apiClient.patch).toHaveBeenCalledWith('/mvp1/profile', expect.objectContaining({
+            medications: maliciousPayload
+        }))
+    })
+
+    it('should return false immediately from updateProfile if loading state is active', async () => {
+        const TestComponent = defineComponent({
+            setup() {
+                const { loading, updateProfile } = useProfile()
+                return { loading, updateProfile }
+            },
+            template: '<div />'
+        })
+        const wrapper = mount(TestComponent)
+        wrapper.vm.loading = true
+
+        const result = await wrapper.vm.updateProfile()
+        expect(result).toBe(false)
+    })
+
+    it('should clear previous success timer when updateProfile runs successfully again', async () => {
+        vi.mocked(apiClient.patch).mockResolvedValue({ data: {} })
+        vi.useFakeTimers()
+        const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout')
+
+        const TestComponent = defineComponent({
+            setup() {
+                const { medications, updateProfile } = useProfile()
+                return { medications, updateProfile }
+            },
+            template: '<div />'
+        })
+        const wrapper = mount(TestComponent)
+
+        wrapper.vm.medications = 'Primeiro Medicamento'
+        await wrapper.vm.updateProfile()
+
+        wrapper.vm.medications = 'Segundo Medicamento (Modificado)'
+        await wrapper.vm.updateProfile()
+
+        expect(clearTimeoutSpy).toHaveBeenCalled()
+        vi.useRealTimers()
+    })
+
+    it('should clear active success timer when component triggers onUnmounted lifecycle hook', async () => {
+        vi.mocked(apiClient.patch).mockResolvedValue({ data: {} })
+        vi.useFakeTimers()
+        const clearTimeoutSpy = vi.spyOn(global, 'clearTimeout')
+
+        const TestComponent = defineComponent({
+            setup() {
+                const { medications, updateProfile } = useProfile()
+                return { medications, updateProfile }
+            },
+            template: '<div />'
+        })
+        const wrapper = mount(TestComponent)
+        wrapper.vm.medications = 'Medicamento de Desmonte'
+        await wrapper.vm.updateProfile()
+
+        wrapper.unmount()
+
+        expect(clearTimeoutSpy).toHaveBeenCalled()
+        vi.useRealTimers()
     })
 })

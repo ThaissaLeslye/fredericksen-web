@@ -7,6 +7,7 @@ describe('useAuthStore', () => {
         setActivePinia(createPinia())
         localStorage.clear()
         vi.restoreAllMocks()
+        vi.unstubAllGlobals()
     })
 
     it('should initialize with default empty state', () => {
@@ -52,17 +53,15 @@ describe('useAuthStore', () => {
 
         store.setSession('some-token', mockUser)
 
-        vi.spyOn(window, 'location', 'get').mockReturnValue({
-            ...window.location,
-            href: ''
-        })
+        const mockLocation = { href: '' }
+        vi.stubGlobal('location', mockLocation)
 
         store.logout()
 
         expect(store.user).toBeNull()
         expect(store.token).toBeNull()
         expect(store.isAuthenticated).toBe(false)
-
         expect(localStorage.getItem('auth_token_mvp1')).toBeNull()
+        expect(mockLocation.href).toBe('/login')
     })
 })

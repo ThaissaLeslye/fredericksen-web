@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
     "preview": "vite preview",
-    "test:unit": "vitest",
+    "test:unit": "vitest --coverage --coverage.thresholds.lines=70",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix"
@@ -24,6 +24,7 @@
     "@types/jsdom": "21.1.7",
     "@types/node": "22.13.1",
     "@vitejs/plugin-vue": "5.2.1",
+    "@vitest/coverage-v8": "^4.1.8",
     "@vitest/eslint-plugin": "1.1.25",
     "@vue/eslint-config-typescript": "14.3.0",
     "@vue/test-utils": "2.4.6",

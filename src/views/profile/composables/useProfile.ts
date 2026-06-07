@@ -50,6 +50,7 @@ export function useProfile() {
     }
 
     async function updateProfile(): Promise<boolean> {
+        if (loading.value) return false
         if (!isDirty()) return false
 
         error.value = null
