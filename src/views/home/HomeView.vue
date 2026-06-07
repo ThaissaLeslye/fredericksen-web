@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from "vue";
 import { useUserProfile } from "@/views/home/composables/useUserProfile";
+import BaseAlert from "@/components/BaseAlert.vue";
 
 const { profile, loading, error, fetchProfile } = useUserProfile();
 
@@ -37,13 +38,7 @@ onMounted(async () => {
       </header>
 
       <main class="py-8">
-        <div
-          v-if="error"
-          role="alert"
-          class="p-4 rounded-xl bg-brand-card border border-brand-red/10 text-brand-dark text-sm"
-        >
-          {{ error }}
-        </div>
+        <BaseAlert v-if="error" type="error" :message="error" assertive />
       </main>
     </div>
   </div>
