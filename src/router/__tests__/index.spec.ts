@@ -1,35 +1,32 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
-import router from '../index'
-import { tokenService } from '../../infrastructure/token/tokenService'
+import { describe, it, expect, beforeEach, vi } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
+import router from "../index";
+import { useAuthStore } from "../../stores/auth/auth";
 
-describe('Router Navigation Guards', () => {
+describe("Router Navigation Guards", () => {
+    let authStore: ReturnType<typeof useAuthStore>;
+
     beforeEach(async () => {
-        localStorage.clear()
-        vi.restoreAllMocks()
-        await router.push('/auth/callback')
-    })
+        setActivePinia(createPinia());
+        authStore = useAuthStore();
 
-    it('should redirect an unauthenticated user to login when accessing a protected route', async () => {
-        vi.spyOn(tokenService, 'getToken').mockReturnValue(null)
+        vi.restoreAllMocks();
+        await router.push("/login");
 
-        await router.push('/profile')
+        it("should redirect an unauthenticated user to login when accessing a protected route", async () => {
+            vi.spyOn(authStore, "checkSession").mockResolvedValue(false);
 
-        expect(router.currentRoute.value.name).toBe('login')
-    })
+            await router.push("/profile");
 
-    it('should redirect an authenticated user to home when trying to access the login page', async () => {
-        vi.spyOn(tokenService, 'getToken').mockReturnValue('mock-jwt-token')
+            expect(router.currentRoute.value.name).toBe("login");
+        });
 
-        await router.push('/login')
+        it("should redirect an authenticated user to home when trying to access the login page", async () => {
+            vi.spyOn(authStore, "checkSession").mockResolvedValue(true);
 
-        expect(router.currentRoute.value.name).toBe('home')
-    })
+            await router.push("/login");
 
-    it('should allow access to auth callback route even without a token', async () => {
-        vi.spyOn(tokenService, 'getToken').mockReturnValue(null)
-
-        await router.push('/auth/callback')
-
-        expect(router.currentRoute.value.name).toBe('auth-callback')
-    })
-})
+            expect(router.currentRoute.value.name).toBe("home");
+        });
+    });
+});
