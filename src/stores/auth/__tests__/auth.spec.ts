@@ -1,67 +1,69 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { setActivePinia, createPinia } from 'pinia'
-import { useAuthStore, type UserSession } from '../auth'
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { setActivePinia, createPinia } from "pinia";
+import { useAuthStore, type UserSession } from "../auth";
+import { apiClient } from "@/infrastructure/http/apiClient";
 
-describe('useAuthStore', () => {
+vi.mock("@/infrastructure/http/apiClient", () => ({
+    apiClient: {
+        get: vi.fn(),
+    },
+}));
+
+describe("useAuthStore", () => {
+    const mockUser: UserSession = {
+        id: "uuid-123",
+        name: "Thaisa Lourenço",
+        email: "fulana.tal@gmail.com",
+        photoUrl: "https://foto.url",
+    };
+
     beforeEach(() => {
-        setActivePinia(createPinia())
-        localStorage.clear()
-        vi.restoreAllMocks()
-        vi.unstubAllGlobals()
-    })
+        setActivePinia(createPinia());
+        vi.clearAllMocks();
+        vi.unstubAllGlobals();
+    });
 
-    it('should initialize with default empty state', () => {
-        const store = useAuthStore()
-        expect(store.user).toBeNull()
-        expect(store.token).toBeNull()
-        expect(store.isAuthenticated).toBe(false)
-    })
+    it("should initialize with default pristine states", () => {
+        const store = useAuthStore();
+        expect(store.user).toBeNull();
+        expect(store.isAuthenticated).toBe(false);
+        expect(store.initialized).toBe(false);
+    });
 
-    it('should correctly populate state on setSession', () => {
-        const store = useAuthStore()
-        const mockUser: UserSession = {
-            id: 'uuid-123',
-            name: 'Thaisa Lourenço',
-            email: 'fulana.tal@gmail.com',
-            photoUrl: 'https://foto.url'
-        }
-        const mockToken = 'mock-jwt-token'
+    it("should successfully populate state when checkSession hits valid cookie credentials", async () => {
+        const store = useAuthStore();
+        vi.mocked(apiClient.get).mockResolvedValueOnce({ data: mockUser });
 
-        store.setSession(mockToken, mockUser)
+        const isAuthorized = await store.checkSession();
 
-        expect(store.token).toBe(mockToken)
-        expect(store.user).toEqual(mockUser)
-        expect(store.isAuthenticated).toBe(true)
-        expect(localStorage.getItem('auth_token_mvp1')).toBe(mockToken)
-    })
+        expect(isAuthorized).toBe(true);
+        expect(store.user).toEqual(mockUser);
+        expect(store.isAuthenticated).toBe(true);
+        expect(store.initialized).toBe(true);
+    });
 
-    it('should consider authenticated if token exists even when user payload is absent on hard refresh', () => {
-        const store = useAuthStore()
-        store.token = 'mock-jwt-token'
+    it("should invalidate state and return false when checkSession hits an expired cookie", async () => {
+        const store = useAuthStore();
+        vi.mocked(apiClient.get).mockRejectedValueOnce(new Error("Unauthorized"));
 
-        expect(store.isAuthenticated).toBe(true)
-    })
+        const isAuthorized = await store.checkSession();
 
-    it('should clean memory and storage keys completely on logout', () => {
-        const store = useAuthStore()
-        const mockUser: UserSession = {
-            id: 'uuid-123',
-            name: 'Thaisa Lourenço',
-            email: 'fulana.tal@gmail.com',
-            photoUrl: 'https://foto.url'
-        }
+        expect(isAuthorized).toBe(false);
+        expect(store.user).toBeNull();
+        expect(store.isAuthenticated).toBe(false);
+    });
 
-        store.setSession('some-token', mockUser)
+    it("should wipe out layout session context completely on logout execution", () => {
+        const store = useAuthStore();
+        store.setSession(mockUser);
 
-        const mockLocation = { href: '' }
-        vi.stubGlobal('location', mockLocation)
+        const mockLocation = { href: "" };
+        vi.stubGlobal("location", mockLocation);
 
-        store.logout()
+        store.logout();
 
-        expect(store.user).toBeNull()
-        expect(store.token).toBeNull()
-        expect(store.isAuthenticated).toBe(false)
-        expect(localStorage.getItem('auth_token_mvp1')).toBeNull()
-        expect(mockLocation.href).toBe('/login')
-    })
-})
+        expect(store.user).toBeNull();
+        expect(store.isAuthenticated).toBe(false);
+        expect(mockLocation.href).toBe("/login");
+    });
+});
