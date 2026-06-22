@@ -14,7 +14,7 @@ export function useProfile() {
 
     let pristineSnapshot = { medications: "", allergies: "", bloodType: "" };
 
-    const successTimer: ReturnType<typeof setTimeout> | null = null;
+    let successTimer: ReturnType<typeof setTimeout> | null = null;
 
     function createSnapshot(): void {
         pristineSnapshot = {
@@ -56,6 +56,11 @@ export function useProfile() {
         error.value = null;
         success.value = false;
 
+        if (successTimer) {
+            clearTimeout(successTimer);
+            successTimer = null;
+        }
+
         loading.value = true;
 
         const payload: UpdateProfilePayload = {
@@ -68,6 +73,11 @@ export function useProfile() {
             await apiClient.patch<void>(API_ENDPOINTS.PROFILE.BASE, payload);
 
             createSnapshot();
+
+            success.value = true;
+            successTimer = setTimeout(() => {
+                success.value = false;
+            }, 3000);
 
             return true;
         } catch {
