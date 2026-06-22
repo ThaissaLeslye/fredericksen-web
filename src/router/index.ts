@@ -12,12 +12,6 @@ const router = createRouter({
             meta: { requiresAuth: true },
         },
         {
-            path: "/auth/callback",
-            name: "auth-callback",
-            component: () => import("../views/auth/OAuthCallbackView.vue"),
-            meta: { requiresAuth: false },
-        },
-        {
             path: "/login",
             name: "login",
             component: () => import("../views/login/LoginView.vue"),
@@ -40,10 +34,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, _from, next) => {
     const authStore = useAuthStore();
-
-    if (to.name === "auth-callback") {
-        return next();
-    }
 
     const isAuthenticated = await authStore.checkSession();
 
