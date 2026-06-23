@@ -13,13 +13,6 @@ export default defineConfig({
             injectRegister: "inline",
             workbox: {
                 globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff2}"],
-                navigateFallbackDenylist: [/^\/(auth|user|profile)\/.*$/],
-                runtimeCaching: [
-                    {
-                        urlPattern: /^\/(auth|user|profile)\/.*$/,
-                        handler: "NetworkOnly",
-                    },
-                ],
             },
             manifest: {
                 name: "Fredericksen App",
