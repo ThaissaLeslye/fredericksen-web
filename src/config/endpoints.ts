@@ -1,4 +1,4 @@
-const V1 = '/mvp1' as const
+const V1 = "" as const;
 
 export const API_ENDPOINTS = {
     AUTH: {
@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
     PROFILE: {
         BASE: `${V1}/profile`,
     },
-} as const
+} as const;
 
-export type ApiEndpoint = typeof API_ENDPOINTS[keyof typeof API_ENDPOINTS][keyof typeof API_ENDPOINTS[keyof typeof API_ENDPOINTS]]
+export type ApiEndpoint =
+    (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS][keyof (typeof API_ENDPOINTS)[keyof typeof API_ENDPOINTS]];

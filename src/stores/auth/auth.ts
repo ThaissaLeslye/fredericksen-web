@@ -1,45 +1,59 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
-import { tokenService } from '@/infrastructure/token/tokenService'
+import { ref, computed } from "vue";
+import { defineStore } from "pinia";
+import { apiClient } from "@/infrastructure/http/apiClient";
+import { API_ENDPOINTS } from "@/config/endpoints";
 
 export interface UserSession {
-    id: string
-    name: string
-    email: string
-    photoUrl: string
+    id: string;
+    name: string;
+    email: string;
+    photoUrl: string;
 }
 
-export const useAuthStore = defineStore('auth', () => {
-    const user = ref<UserSession | null>(null)
-    const token = ref<string | null>(tokenService.getToken())
-    const isProcessing = ref<boolean>(false)
+export const useAuthStore = defineStore("auth", () => {
+    const user = ref<UserSession | null>(null);
+    const isProcessing = ref<boolean>(false);
+    const initialized = ref<boolean>(false);
 
-    const isAuthenticated = computed<boolean>(() => !!token.value)
+    const isAuthenticated = computed<boolean>(() => !!user.value);
 
-    function setSession(accessToken: string, userData: UserSession): void {
-        token.value = accessToken
-        user.value = userData
+    async function checkSession(): Promise<boolean> {
+        if (initialized.value) return isAuthenticated.value;
 
-        //localStorage.setItem('auth_token', accessToken)
-        tokenService.setToken(accessToken)
+        isProcessing.value = true;
+        try {
+            const response = await apiClient.get<UserSession>(API_ENDPOINTS.USER.ME);
+            user.value = response.data;
+            return true;
+        } catch {
+            user.value = null;
+            return false;
+        } finally {
+            initialized.value = true;
+            isProcessing.value = false;
+        }
+    }
+
+    function setSession(userData: UserSession): void {
+        user.value = userData;
+        initialized.value = true;
     }
 
     function logout(): void {
-        user.value = null
-        token.value = null
-        isProcessing.value = false
+        user.value = null;
+        isProcessing.value = false;
+        initialized.value = false;
 
-        tokenService.removeToken()
-
-        window.location.href = '/login'
+        window.location.href = "/login";
     }
 
     return {
         user,
-        token,
         isProcessing,
+        initialized,
         isAuthenticated,
+        checkSession,
         setSession,
-        logout
-    }
-})
+        logout,
+    };
+});
