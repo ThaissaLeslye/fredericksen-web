@@ -16,6 +16,8 @@ export function useProfile() {
 
     let successTimer: ReturnType<typeof setTimeout> | null = null;
 
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
     function createSnapshot(): void {
         pristineSnapshot = {
             medications: medications.value,
@@ -49,47 +51,64 @@ export function useProfile() {
         }
     }
 
-    async function updateProfile(): Promise<boolean> {
-        if (loading.value) return false;
-        if (!isDirty()) return false;
-
-        error.value = null;
-        success.value = false;
-
-        if (successTimer) {
-            clearTimeout(successTimer);
-            successTimer = null;
+    function updateProfile(): Promise<boolean> {
+        if (debounceTimer) {
+            clearTimeout(debounceTimer);
         }
 
-        loading.value = true;
+        return new Promise((resolve) => {
+            debounceTimer = setTimeout(async () => {
+                if (loading.value) {
+                    const retryResult = await updateProfile();
+                    resolve(retryResult);
+                    return;
+                }
 
-        const payload: UpdateProfilePayload = {
-            medications: medications.value,
-            allergies: allergies.value,
-            bloodType: bloodType.value === "" ? null : bloodType.value,
-        };
+                if (!isDirty()) {
+                    resolve(false);
+                    return;
+                }
 
-        try {
-            await apiClient.patch<void>(API_ENDPOINTS.PROFILE.BASE, payload);
-
-            createSnapshot();
-
-            success.value = true;
-            successTimer = setTimeout(() => {
+                error.value = null;
                 success.value = false;
-            }, 3000);
 
-            return true;
-        } catch {
-            error.value = "Falha ao atualizar o perfil médico. Tente novamente.";
-            return false;
-        } finally {
-            loading.value = false;
-        }
+                if (successTimer) {
+                    clearTimeout(successTimer);
+                    successTimer = null;
+                }
+
+                loading.value = true;
+
+                const payload: UpdateProfilePayload = {
+                    medications: medications.value,
+                    allergies: allergies.value,
+                    bloodType: bloodType.value === "" ? null : bloodType.value,
+                };
+
+                try {
+                    await apiClient.patch<void>(API_ENDPOINTS.PROFILE.BASE, payload);
+
+                    createSnapshot();
+
+                    success.value = true;
+                    successTimer = setTimeout(() => {
+                        success.value = false;
+                    }, 3000);
+
+                    resolve(true);
+                } catch {
+                    error.value = "Falha ao atualizar o perfil médico. Tente novamente.";
+                    resolve(false);
+                } finally {
+                    loading.value = false;
+                }
+            }, 300);
+        });
     }
 
     onUnmounted(() => {
         if (successTimer) clearTimeout(successTimer);
+        if (debounceTimer) clearTimeout(debounceTimer);
     });
 
     return {
