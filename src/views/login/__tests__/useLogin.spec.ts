@@ -24,10 +24,10 @@ describe("useLogin", () => {
         expect(googleAuthUrl.value).toBe("https://api.fredericksen.local/auth/google");
     });
 
-    it("should fallback to relative path structure if environment variables are missing", () => {
+    it("should fallback to production absolute url structure if environment variables are missing", () => {
         vi.stubEnv("VITE_API_URL", "");
         const { googleAuthUrl } = useLogin();
-        expect(googleAuthUrl.value).toBe("/auth/google");
+        expect(googleAuthUrl.value).toBe("https://rick-api.tllo.app/auth/google"); // ALTERADO: Validação do endpoint real
     });
 
     it("should evaluate state as null when error parameter is absent in query stream", () => {
