@@ -1,9 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
+import { createPinia, setActivePinia } from "pinia";
 import axios from "axios";
 import { useUserProfile } from "../composables/useUserProfile";
 import { apiClient } from "@/infrastructure/http/apiClient";
+import { useAuthStore } from "@/stores/auth/auth";
 
 vi.mock("@/infrastructure/http/apiClient", () => ({
     apiClient: {
@@ -13,8 +15,11 @@ vi.mock("@/infrastructure/http/apiClient", () => ({
 
 describe("useUserProfile", () => {
     let abortSpy: ReturnType<typeof vi.spyOn>;
+    let authStore: ReturnType<typeof useAuthStore>;
 
     beforeEach(() => {
+        setActivePinia(createPinia());
+        authStore = useAuthStore();
         vi.clearAllMocks();
         abortSpy = vi.spyOn(AbortController.prototype, "abort");
     });
@@ -25,6 +30,23 @@ describe("useUserProfile", () => {
         expect(profile.value).toBeNull();
         expect(loading.value).toBe(false);
         expect(error.value).toBeNull();
+    });
+
+    it("should return profile data from authStore without HTTP call if user is already cached", async () => {
+        const cachedUser = {
+            id: "uuid-cached",
+            name: "Thaisa Cached",
+            email: "cached@gmail.com",
+            photoUrl: "https://foto.url",
+        };
+        authStore.user = cachedUser;
+
+        const { profile, loading, fetchProfile } = useUserProfile();
+        await fetchProfile();
+
+        expect(profile.value).toEqual(cachedUser);
+        expect(loading.value).toBe(false);
+        expect(apiClient.get).not.toHaveBeenCalled();
     });
 
     it("should successfully capture and populate user profile metadata from backend node", async () => {

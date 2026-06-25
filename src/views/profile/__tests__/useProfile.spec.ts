@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { defineComponent } from "vue";
 import { mount } from "@vue/test-utils";
 import { useProfile } from "../composables/useProfile";
@@ -14,6 +14,11 @@ vi.mock("@/infrastructure/http/apiClient", () => ({
 describe("useProfile Composable", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.useFakeTimers();
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it("should initialize with correct default pristine states as strings", () => {
