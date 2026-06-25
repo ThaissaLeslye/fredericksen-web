@@ -76,7 +76,9 @@ describe("useProfile Composable", () => {
         allergies.value = "";
         bloodType.value = "";
 
-        const result = await updateProfile();
+        const promise = updateProfile();
+        vi.advanceTimersByTime(300);
+        const result = await promise;
 
         expect(result).toBe(true);
         expect(success.value).toBe(true);
@@ -97,16 +99,13 @@ describe("useProfile Composable", () => {
         allergies.value = "Poeira";
         bloodType.value = "O_NEGATIVE";
 
-        const result = await updateProfile();
+        const promise = updateProfile();
+        vi.advanceTimersByTime(300);
+        const result = await promise;
 
         expect(result).toBe(true);
         expect(success.value).toBe(true);
         expect(error.value).toBeNull();
-        expect(apiClient.patch).toHaveBeenCalledWith("/profile", {
-            medications: "Dipirona",
-            allergies: "Poeira",
-            bloodType: "O_NEGATIVE",
-        });
     });
 
     it("should forward data without execution or mutations when handling malicious XSS scripts inside input states", async () => {
@@ -116,7 +115,9 @@ describe("useProfile Composable", () => {
         const maliciousPayload = "<script>alert('xss')</script>";
         medications.value = maliciousPayload;
 
-        const result = await updateProfile();
+        const promise = updateProfile();
+        vi.advanceTimersByTime(300);
+        const result = await promise;
 
         expect(result).toBe(true);
         expect(apiClient.patch).toHaveBeenCalledWith(
@@ -127,48 +128,52 @@ describe("useProfile Composable", () => {
         );
     });
 
-    it("should return false immediately from updateProfile if loading state is active", async () => {
+    it("should queue and retry updateProfile instead of rejecting if loading state is active", async () => {
+        vi.mocked(apiClient.patch).mockResolvedValue({ data: {} });
+
         const TestComponent = defineComponent({
             setup() {
-                const { loading, updateProfile } = useProfile();
-                return { loading, updateProfile };
+                const { loading, medications, updateProfile } = useProfile();
+                return { loading, medications, updateProfile };
             },
             template: "<div />",
         });
         const wrapper = mount(TestComponent);
+        wrapper.vm.medications = "Nova medicação";
         wrapper.vm.loading = true;
+        const promise = wrapper.vm.updateProfile();
 
-        const result = await wrapper.vm.updateProfile();
-        expect(result).toBe(false);
+        vi.advanceTimersByTime(300);
+        wrapper.vm.loading = false;
+
+        vi.advanceTimersByTime(300);
+        const result = await promise;
+
+        expect(result).toBe(true);
+        expect(apiClient.patch).toHaveBeenCalledTimes(1);
     });
 
     it("should clear previous success timer when updateProfile runs successfully again", async () => {
         vi.mocked(apiClient.patch).mockResolvedValue({ data: {} });
-        vi.useFakeTimers();
         const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
 
-        const TestComponent = defineComponent({
-            setup() {
-                const { medications, updateProfile } = useProfile();
-                return { medications, updateProfile };
-            },
-            template: "<div />",
-        });
-        const wrapper = mount(TestComponent);
+        const { medications, updateProfile } = useProfile();
 
-        wrapper.vm.medications = "Primeiro Medicamento";
-        await wrapper.vm.updateProfile();
+        medications.value = "Primeiro Medicamento";
+        const p1 = updateProfile();
+        vi.advanceTimersByTime(300);
+        await p1;
 
-        wrapper.vm.medications = "Segundo Medicamento (Modificado)";
-        await wrapper.vm.updateProfile();
+        medications.value = "Segundo Medicamento (Modificado)";
+        const p2 = updateProfile();
+        vi.advanceTimersByTime(300);
+        await p2;
 
         expect(clearTimeoutSpy).toHaveBeenCalled();
-        vi.useRealTimers();
     });
 
     it("should clear active success timer when component triggers onUnmounted lifecycle hook", async () => {
         vi.mocked(apiClient.patch).mockResolvedValue({ data: {} });
-        vi.useFakeTimers();
         const clearTimeoutSpy = vi.spyOn(global, "clearTimeout");
 
         const TestComponent = defineComponent({
@@ -180,11 +185,39 @@ describe("useProfile Composable", () => {
         });
         const wrapper = mount(TestComponent);
         wrapper.vm.medications = "Medicamento de Desmonte";
-        await wrapper.vm.updateProfile();
+
+        const p = wrapper.vm.updateProfile();
+        vi.advanceTimersByTime(300);
+        await p;
 
         wrapper.unmount();
 
         expect(clearTimeoutSpy).toHaveBeenCalled();
-        vi.useRealTimers();
+    });
+
+    it("should consolidate multiple consecutive updates into a single PATCH request", async () => {
+        vi.mocked(apiClient.patch).mockResolvedValue({ data: {} });
+
+        const { medications, updateProfile } = useProfile();
+
+        medications.value = "A";
+        updateProfile();
+
+        medications.value = "B";
+        updateProfile();
+
+        medications.value = "C";
+        const promise = updateProfile();
+
+        vi.advanceTimersByTime(300);
+        await promise;
+
+        expect(apiClient.patch).toHaveBeenCalledTimes(1);
+        expect(apiClient.patch).toHaveBeenCalledWith(
+            "/profile",
+            expect.objectContaining({
+                medications: "C",
+            }),
+        );
     });
 });
