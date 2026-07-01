@@ -39,12 +39,19 @@ export const useAuthStore = defineStore("auth", () => {
         initialized.value = true;
     }
 
-    function logout(): void {
-        user.value = null;
-        isProcessing.value = false;
-        initialized.value = false;
+    async function logout(): Promise<void> {
+        isProcessing.value = true;
 
-        window.location.href = "/login";
+        try {
+            await apiClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+        } catch (error) {
+            console.error("[AuthStore] Falha ao revogar sessão remota:", error);
+        } finally {
+            user.value = null;
+            isProcessing.value = false;
+            initialized.value = false;
+            window.location.href = "/login";
+        }
     }
 
     return {

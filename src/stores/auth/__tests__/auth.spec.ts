@@ -6,6 +6,7 @@ import { apiClient } from "@/infrastructure/http/apiClient";
 vi.mock("@/infrastructure/http/apiClient", () => ({
     apiClient: {
         get: vi.fn(),
+        post: vi.fn(),
     },
 }));
 
@@ -53,15 +54,17 @@ describe("useAuthStore", () => {
         expect(store.isAuthenticated).toBe(false);
     });
 
-    it("should wipe out layout session context completely on logout execution", () => {
+    it("should request backend revocation and wipe out session context on logout execution", async () => {
         const store = useAuthStore();
         store.setSession(mockUser);
+        vi.mocked(apiClient.post).mockResolvedValueOnce({});
 
         const mockLocation = { href: "" };
         vi.stubGlobal("location", mockLocation);
 
-        store.logout();
+        await store.logout();
 
+        expect(apiClient.post).toHaveBeenCalledWith("/auth/logout");
         expect(store.user).toBeNull();
         expect(store.isAuthenticated).toBe(false);
         expect(mockLocation.href).toBe("/login");
