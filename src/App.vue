@@ -6,19 +6,21 @@ import NetworkBanner from "@/components/NetworkBanner.vue";
 const authStore = useAuthStore();
 
 const handleSessionExpired = (): void => {
-  authStore.logout();
+    if (authStore.isAuthenticated) {
+        authStore.logout();
+    }
 };
 
 onMounted(() => {
-  window.addEventListener("auth:expired", handleSessionExpired);
+    window.addEventListener("auth:expired", handleSessionExpired);
 });
 
 onUnmounted(() => {
-  window.removeEventListener("auth:expired", handleSessionExpired);
+    window.removeEventListener("auth:expired", handleSessionExpired);
 });
 </script>
 
 <template>
-  <RouterView />
-  <NetworkBanner />
+    <RouterView />
+    <NetworkBanner />
 </template>
