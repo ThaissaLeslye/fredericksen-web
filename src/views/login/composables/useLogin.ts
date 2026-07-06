@@ -6,7 +6,7 @@ export function useLogin() {
     const route = useRoute();
 
     const googleAuthUrl = computed<string>(() => {
-        const baseUrl = import.meta.env.VITE_API_URL || "https://rick-api.tllo.app"; // ALTERADO: Fallback absoluto seguro
+        const baseUrl = import.meta.env.VITE_API_URL || "";
         return `${baseUrl}${API_ENDPOINTS.AUTH.GOOGLE_LOGIN}`;
     });
 

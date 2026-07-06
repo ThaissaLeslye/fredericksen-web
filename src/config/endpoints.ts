@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
     AUTH: {
         GOOGLE_LOGIN: `${V1}/auth/google`,
         GOOGLE_CALLBACK: `${V1}/auth/google/callback`,
+        LOGOUT: `${V1}/auth/logout`,
     },
     USER: {
         ME: `${V1}/user/me`,
