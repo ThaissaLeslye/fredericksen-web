@@ -39,7 +39,7 @@ describe("useUserProfile", () => {
             email: "cached@gmail.com",
             photoUrl: "https://foto.url",
         };
-        authStore.user = cachedUser;
+        authStore.setSession(cachedUser);
 
         const { profile, loading, fetchProfile } = useUserProfile();
         await fetchProfile();
