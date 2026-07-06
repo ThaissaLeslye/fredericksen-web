@@ -11,11 +11,25 @@ export interface UserSession {
 }
 
 export const useAuthStore = defineStore("auth", () => {
-    const user = ref<UserSession | null>(null);
+    const _user = ref<UserSession | null>(null);
     const isProcessing = ref<boolean>(false);
     const initialized = ref<boolean>(false);
 
-    const isAuthenticated = computed<boolean>(() => !!user.value);
+    const user = computed<UserSession | null>(() => {
+        if (!_user.value) return null;
+
+        return {
+            ..._user.value,
+            name: _user.value.name
+                ? _user.value.name
+                      .replace(/\bundefined\b/gi, "")
+                      .replace(/\s+/g, " ")
+                      .trim()
+                : "",
+        };
+    });
+
+    const isAuthenticated = computed<boolean>(() => !!_user.value);
 
     async function checkSession(): Promise<boolean> {
         if (initialized.value) return isAuthenticated.value;
@@ -23,10 +37,10 @@ export const useAuthStore = defineStore("auth", () => {
         isProcessing.value = true;
         try {
             const response = await apiClient.get<UserSession>(API_ENDPOINTS.USER.ME);
-            user.value = response.data;
+            _user.value = response.data;
             return true;
         } catch {
-            user.value = null;
+            _user.value = null;
             return false;
         } finally {
             initialized.value = true;
@@ -35,7 +49,7 @@ export const useAuthStore = defineStore("auth", () => {
     }
 
     function setSession(userData: UserSession): void {
-        user.value = userData;
+        _user.value = userData;
         initialized.value = true;
     }
 
@@ -47,7 +61,7 @@ export const useAuthStore = defineStore("auth", () => {
         } catch (error) {
             console.error("[AuthStore] Falha ao revogar sessão remota:", error);
         } finally {
-            user.value = null;
+            _user.value = null;
             isProcessing.value = false;
             initialized.value = false;
             window.location.href = "/login";
