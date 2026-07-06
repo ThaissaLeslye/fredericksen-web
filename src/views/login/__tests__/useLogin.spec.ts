@@ -16,12 +16,13 @@ vi.mock("vue-router", () => ({
 describe("useLogin", () => {
     beforeEach(() => {
         mockErrorQuery = null;
-        vi.stubEnv("VITE_API_URL", "https://api.fredericksen.local");
+        vi.stubEnv("VITE_API_URL", import.meta.env.VITE_API_URL || "");
     });
 
     it("should compute the correct google authentication URL targeting the backend node", () => {
         const { googleAuthUrl } = useLogin();
-        expect(googleAuthUrl.value).toBe("https://api.fredericksen.local/auth/google");
+        const expectedUrl = `${import.meta.env.VITE_API_URL || ""}/auth/google`;
+        expect(googleAuthUrl.value).toBe(expectedUrl);
     });
 
     it("should fallback to relative url structure if environment variables are missing", () => {
